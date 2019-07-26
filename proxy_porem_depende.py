@@ -15,8 +15,28 @@ browser.listen(10)
 
 
 
+
+
+def load_blacklist():
+	bk = []
+	with open("blacklist.txt",'r') as arc_bk:
+		for line in arc_bk:
+	 		print(line)
+	 		bk.append(line)
+
+	return bk
+
+def check_request(webserver,bk):
+	flag = 1
+	for i in range(len(bk)):
+		if( webserver.find(bk[i]) ):
+			flag = 0
+
+	return flag
+
+
 def reply_request(webserver,port,connection,request):
-	#estabele conexão com o servidor web desejado
+	#estabelece conexao com o servidor web desejado
 	server = socket(AF_INET, SOCK_STREAM) 
 	server.settimeout(20)
 	print(webserver)
@@ -26,7 +46,7 @@ def reply_request(webserver,port,connection,request):
 
 	while 1:
 		try:
-			#Lê os dados enviados pelo servidor web
+			#Le os dados enviados pelo servidor web
 			data = server.recv(2048)
 			if (len(data) > 0):
 				print("Send...")
@@ -48,6 +68,10 @@ def reply_blocked(connection,arq_name):
 				connection.send(data)
 				data = f.read(2048)
 	connection.close()
+
+
+
+bk = load_blacklist()
 
 while True:
 
@@ -88,9 +112,10 @@ while True:
 		port = int(port)
 
 	print(webserver)	
-
 	
-	blackList = 2
+	#verifica se a requisição está na blacklist
+	blackList = check_request(webserver,bk)
+
 	if(blackList == 1):
 		
 		t = threading.Thread(target=reply_request,args=(webserver,port,connection,request))	
